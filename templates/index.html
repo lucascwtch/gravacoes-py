@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Minha Biblioteca de Música</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bulma/0.9.2/css/bulma.min.css">
+    <link rel="stylesheet" href="style.css" type="text/css">
+  </head>
+  <body>
+    <div class="loader"></div>
+
+    <section class="hero is-primary">
+      <div class="hero-body">
+        <div class="container">
+          <h1 class="title">
+            Minha Biblioteca de Música
+          </h1>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="columns">
+          <div class="column is-one-quarter">
+            <div class="box">
+              <h2 class="title is-5">Categorias</h2>
+              <ul id="categorias">
+              </ul>
+            </div>
+          </div>
+          <div class="column">
+            <div class="box">
+              <h2 class="title is-5">Arquivos</h2>
+              <ul id="arquivos">
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <script>
+      const apiBaseUrl = 'http://localhost:5000';
+
+      const categoriasList = document.getElementById('categorias');
+      const arquivosList = document.getElementById('arquivos');
+
+      async function fetchCategorias() {
+        const response = await fetch(`${apiBaseUrl}/categorias`);
+        const data = await response.json();
+        for (const categoria in data) {
+          const li = document.createElement('li');
+          li.classList.add('categoria');
+          li.innerHTML = categoria;
+          li.addEventListener('click', () => {
+            // adiciona a classe 'selected' à categoria clicada
+            li.classList.add('selected');
+            
+            // remove a classe 'selected' das outras categorias
+            const outrasCategorias = categoriasList.querySelectorAll('li:not(.selected)');
+            outrasCategorias.forEach(categoria => categoria.classList.remove('selected'));
+
+            fetchArquivos(categoria);
+          });
+          categoriasList.appendChild(li);
+        }
+      }
+
+      async function fetchArquivos(categoria) {
+        const response = await fetch(`${apiBaseUrl}/arquivos?categoria=${categoria}`);
+        const data = await response.json();
+        arquivosList.innerHTML = '';
+        for (const arquivo of data) {
+          const li = document.createElement('li');
+          li.classList.add('arquivo');
+          li.innerHTML = `${arquivo.nome} <span class="tag is-light">${(arquivo.tamanho / (1024 * 1024)).toFixed(2)} MB</span>`;
+          li.addEventListener('click', () => {
+            window.location.href = `${apiBaseUrl}/ler/${categoria}/${arquivo.nome}`;
+          });
+          arquivosList.appendChild(li);
+        }
+      }
+
+      fetchCategorias();
+    </script>
+  </body>
+</html>
